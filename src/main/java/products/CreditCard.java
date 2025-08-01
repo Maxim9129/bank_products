@@ -9,10 +9,12 @@ public class CreditCard extends BankProduct implements Rechargeable, Withdrawabl
 
     private double percent;
     private double debt;
+    protected double limit;
 
     public CreditCard(String currency, double balance, String name, double percent) {
         super(currency, balance, name);
         this.percent = percent;
+        this.limit = balance;
         this.debt = 0;
     }
 
@@ -21,18 +23,20 @@ public class CreditCard extends BankProduct implements Rechargeable, Withdrawabl
         if (debt > 0) {
             double payment = Math.min(amount, debt);
             debt -= payment;
-            amount -= payment;
         }
         productBalance += amount;
     }
 
     @Override
     public void withdraw(double amount) {
-        productBalance -= amount;
-        if (productBalance < 0) {
-            debt -= productBalance;
-            productBalance = 0;
+        if (amount <= productBalance) {
+            productBalance -= amount;
+            if (productBalance < limit) {
+                debt = limit - productBalance;
+            }
         }
+        else
+            throw new IllegalStateException("Not enough money!");
     }
 
     public double getDebt() {
